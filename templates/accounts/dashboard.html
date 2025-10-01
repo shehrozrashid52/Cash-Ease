@@ -4,6 +4,21 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
+<!-- Welcome Message -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between">
+            <div>
+                <h3 class="mb-1 fw-bold text-dark">Welcome back, {{ user.profile.full_name }}!</h3>
+                <p class="text-muted mb-0">Here's what's happening with your account today.</p>
+            </div>
+            <div class="text-end">
+                <small class="text-muted">Last login: {{ user.last_login|date:"M d, Y H:i" }}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Balance Card -->
 <div class="row g-4 mb-4">
     <div class="col-12">
