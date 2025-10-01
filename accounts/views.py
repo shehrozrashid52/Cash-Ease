@@ -4,94 +4,77 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.db import transaction
-from .models import User, Profile, OTPVerification, KYCDocument, Notification
+from .models import User, Profile, KYCDocument, Notification
 from .forms import RegistrationForm, LoginForm, ProfileForm, KYCUploadForm, PinChangeForm
-from .utils import generate_otp, send_otp
 import random
 from datetime import timedelta
 from decimal import Decimal
 
 def register(request):
     if request.method == 'POST':
-        form = RegistrationForm(request.POST)
-        if form.is_valid():
+        try:
             with transaction.atomic():
-                user = form.save(commit=False)
-                user.is_active = False
-                user.save()
+                # Get form data directly
+                username = request.POST.get('username')
+                email = request.POST.get('email')
+                password1 = request.POST.get('password1')
+                password2 = request.POST.get('password2')
+                first_name = request.POST.get('first_name')
+                last_name = request.POST.get('last_name')
+                phone_number = request.POST.get('phone_number')
+                cnic = request.POST.get('cnic')
+                date_of_birth = request.POST.get('date_of_birth')
+                address = request.POST.get('address')
+                pin = request.POST.get('pin')
+                confirm_pin = request.POST.get('confirm_pin')
                 
-                # Generate OTP
-                otp_code = generate_otp()
-                OTPVerification.objects.create(
-                    user=user,
-                    otp_code=otp_code,
-                    purpose='registration',
-                    expires_at=timezone.now() + timedelta(minutes=10)
+                # Basic validation
+                if password1 != password2:
+                    messages.error(request, 'Passwords do not match')
+                    return render(request, 'accounts/register.html')
+                
+                if pin != confirm_pin:
+                    messages.error(request, 'PINs do not match')
+                    return render(request, 'accounts/register.html')
+                
+                if User.objects.filter(username=username).exists():
+                    messages.error(request, 'Username already exists')
+                    return render(request, 'accounts/register.html')
+                
+                if User.objects.filter(phone_number=phone_number).exists():
+                    messages.error(request, 'Phone number already registered')
+                    return render(request, 'accounts/register.html')
+                
+                # Create user
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password1,
+                    first_name=first_name,
+                    last_name=last_name,
+                    phone_number=phone_number,
+                    is_active=True,
+                    is_verified=True
                 )
                 
-                # Send OTP (simulate)
-                send_otp(user.phone_number, otp_code)
-                
-                request.session['user_id'] = user.id
-                messages.success(request, 'Registration successful! Please verify your phone number.')
-                return redirect('accounts:verify_otp')
-    else:
-        form = RegistrationForm()
-    return render(request, 'accounts/register.html', {'form': form})
-
-def verify_otp(request):
-    if request.method == 'POST':
-        otp_code = request.POST.get('otp_code')
-        user_id = request.session.get('user_id')
-        
-        if user_id:
-            try:
-                user = User.objects.get(id=user_id)
-                otp_obj = OTPVerification.objects.get(
-                    user=user, 
-                    otp_code=otp_code, 
-                    is_used=False,
-                    expires_at__gt=timezone.now()
-                )
-                
-                otp_obj.is_used = True
-                otp_obj.save()
-                
-                user.is_active = True
-                user.is_verified = True
-                user.save()
-                
-                # Create profile with required fields
-                import random
-                # Generate unique CNIC
-                while True:
-                    cnic = f"42101-{random.randint(1000000, 9999999)}-{random.randint(1, 9)}"
-                    if not Profile.objects.filter(cnic=cnic).exists():
-                        break
-                
-                # Generate unique CNIC for OTP verification
-                while True:
-                    temp_cnic = f"42101-{random.randint(1000000, 9999999)}-{random.randint(1, 9)}"
-                    if not Profile.objects.filter(cnic=temp_cnic).exists():
-                        break
-                
+                # Create profile
                 Profile.objects.create(
                     user=user,
-                    full_name=user.get_full_name() or f"{user.first_name} {user.last_name}".strip() or user.username,
-                    cnic=temp_cnic,
-                    date_of_birth='1990-01-01',
-                    address='Default Address',
+                    full_name=f"{first_name} {last_name}".strip() or username,
+                    cnic=cnic,
+                    date_of_birth=date_of_birth,
+                    address=address,
                     balance=Decimal('0.00'),
-                    pin='1234'  # Default PIN, user should change it
+                    pin=pin
                 )
                 
-                login(request, user)
-                messages.success(request, 'Phone number verified successfully!')
-                return redirect('accounts:dashboard')
-            except OTPVerification.DoesNotExist:
-                messages.error(request, 'Invalid or expired OTP.')
+                messages.success(request, 'Account created successfully! Please login to continue.')
+                return redirect('accounts:login')
+                
+        except Exception as e:
+            messages.error(request, f'Registration failed: {str(e)}')
     
-    return render(request, 'accounts/verify_otp.html')
+    return render(request, 'accounts/register.html')
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -107,8 +90,7 @@ def login_view(request):
             if user:
                 if user.is_blocked:
                     messages.error(request, 'Your account has been blocked.')
-                elif not user.is_verified:
-                    messages.error(request, 'Please verify your account first.')
+
                 else:
                     login(request, user)
                     messages.success(request, f'Welcome back, {user.get_full_name() or user.username}!')

@@ -51,6 +51,7 @@ class RegistrationForm(UserCreationForm):
         phone_number = cleaned_data.get('phone_number')
         pin = cleaned_data.get('pin')
         confirm_pin = cleaned_data.get('confirm_pin')
+        cnic = cleaned_data.get('cnic')
         
         # Phone number validation
         if phone_number:
@@ -60,6 +61,19 @@ class RegistrationForm(UserCreationForm):
                 raise forms.ValidationError('Phone number must start with 0')
             if not phone_number.isdigit():
                 raise forms.ValidationError('Phone number must contain only digits')
+            # Check if phone number already exists
+            if User.objects.filter(phone_number=phone_number).exists():
+                raise forms.ValidationError('This phone number is already registered')
+        
+        # CNIC validation
+        if cnic:
+            # Remove dashes for validation
+            cnic_digits = cnic.replace('-', '')
+            if len(cnic_digits) != 13 or not cnic_digits.isdigit():
+                raise forms.ValidationError('CNIC must be 13 digits')
+            # Check if CNIC already exists
+            if Profile.objects.filter(cnic=cnic).exists():
+                raise forms.ValidationError('This CNIC is already registered')
         
         # PIN validation
         if pin and confirm_pin:
