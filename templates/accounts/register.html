@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - CashEase</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    {% load static %}
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #662AB2 0%, #8B5CF6 50%, #A855F7 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .register-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 25px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            max-width: 550px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, #662AB2 0%, #7c3aed 100%);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            box-shadow: 0 12px 35px rgba(102, 42, 178, 0.4);
+            transition: transform 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: translateY(-3px);
+        }
+        
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1F2937;
+            margin-bottom: 0.5rem;
+        }
+        
+        .page-subtitle {
+            color: #6B7280;
+            margin-bottom: 0;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 12px;
+            padding: 0.875rem 1rem;
+            border: 2px solid #E5E7EB;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #662AB2;
+            box-shadow: 0 0 0 0.2rem rgba(102, 42, 178, 0.15);
+        }
+        
+        .input-group-text {
+            border-radius: 12px 0 0 12px;
+            border: 2px solid #E5E7EB;
+            border-right: none;
+            background: #F9FAFB;
+            color: #6B7280;
+        }
+        
+        .input-group .form-control {
+            border-left: none;
+            border-radius: 0 12px 12px 0;
+        }
+        
+        .input-group:focus-within .input-group-text {
+            border-color: #662AB2;
+            background: #F3F4F6;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #662AB2, #8B5CF6);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            font-weight: 600;
+            font-size: 1rem;
+            box-shadow: 0 8px 25px rgba(102, 42, 178, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(102, 42, 178, 0.4);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .form-text {
+            font-size: 0.8rem;
+            color: #6B7280;
+        }
+        
+        .alert {
+            border-radius: 12px;
+            border: none;
+        }
+        
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: #E5E7EB;
+            transform: translateX(-5px);
+        }
+        
+        @media (max-width: 576px) {
+            body { padding: 10px; }
+            .register-card { padding: 2rem; }
+            .page-title { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'home' %}" class="back-link">
+        <i class="fas fa-arrow-left me-2"></i>Back to Home
+    </a>
+    
+    <div class="register-container">
+        <div class="register-card">
+            <div class="logo-section">
+                <div class="logo">
+                    <img src="{% static 'images/logo.png' %}" alt="CashEase Logo">
+                </div>
+                <h2 class="page-title">Create Account</h2>
+                <p class="page-subtitle">Join CashEase Banking Today</p>
+            </div>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label for="first_name" class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" required>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label for="last_name" class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" required>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="phone_number" class="form-label">Phone Number</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-phone"></i>
+                        </span>
+                        <input type="tel" class="form-control" id="phone_number" name="phone_number" placeholder="03101234567" pattern="^0\d{10}$" maxlength="11" required>
+                    </div>
+                    <div class="form-text">Enter 11-digit number starting with 0</div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label for="cnic" class="form-label">CNIC</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-id-card"></i>
+                            </span>
+                            <input type="text" class="form-control" id="cnic" name="cnic" placeholder="12345-1234567-1" required>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label for="date_of_birth" class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="address" class="form-label">Address</label>
+                    <textarea class="form-control" id="address" name="address" rows="2" placeholder="Your address" required></textarea>
+                </div>
+                
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label for="password1" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            <input type="password" class="form-control" id="password1" name="password1" required>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label for="password2" class="form-label">Confirm Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock"></i>
+                            </span>
+                            <input type="password" class="form-control" id="password2" name="password2" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label for="pin" class="form-label">Transaction PIN</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-key"></i>
+                            </span>
+                            <input type="password" class="form-control" id="pin" name="pin" maxlength="4" placeholder="4-digit PIN" required>
+                        </div>
+                        <div class="form-text">Create a secure 4-digit PIN</div>
+                    </div>
+                    <div class="col-6 mb-4">
+                        <label for="confirm_pin" class="form-label">Confirm PIN</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-key"></i>
+                            </span>
+                            <input type="password" class="form-control" id="confirm_pin" name="confirm_pin" maxlength="4" placeholder="Confirm PIN" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </button>
+                </div>
+            </form>
+            
+            <div class="text-center">
+                <p class="mb-0 text-muted">Already have an account?</p>
+                <a href="{% url 'accounts:login' %}" class="text-decoration-none fw-semibold" style="color: #662AB2;">
+                    Sign In
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Phone number validation
+        document.getElementById('phone_number').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d]/g, '');
+            if (value.length > 11) value = value.substring(0, 11);
+            e.target.value = value;
+            
+            // Visual validation
+            if (value.length === 11 && value.startsWith('0')) {
+                e.target.classList.remove('is-invalid');
+                e.target.classList.add('is-valid');
+            } else {
+                e.target.classList.remove('is-valid');
+                e.target.classList.add('is-invalid');
+            }
+        });
+
+        // CNIC formatting
+        document.getElementById('cnic').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d]/g, '');
+            if (value.length >= 5) value = value.substring(0, 5) + '-' + value.substring(5);
+            if (value.length >= 13) value = value.substring(0, 13) + '-' + value.substring(13);
+            e.target.value = value.substring(0, 15);
+        });
+
+        // PIN validation
+        document.getElementById('pin').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^\d]/g, '').substring(0, 4);
+        });
+
+        document.getElementById('confirm_pin').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^\d]/g, '').substring(0, 4);
+        });
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const phone = document.getElementById('phone_number').value;
+            const cnic = document.getElementById('cnic').value;
+            const password1 = document.getElementById('password1').value;
+            const password2 = document.getElementById('password2').value;
+            const pin = document.getElementById('pin').value;
+            const confirmPin = document.getElementById('confirm_pin').value;
+            
+            if (phone.length !== 11 || !phone.startsWith('0')) {
+                e.preventDefault();
+                alert('Please enter a valid 11-digit number starting with 0');
+                return;
+            }
+            
+            if (cnic.replace(/-/g, '').length !== 13) {
+                e.preventDefault();
+                alert('Please enter a valid 13-digit CNIC');
+                return;
+            }
+            
+            if (password1 !== password2) {
+                e.preventDefault();
+                alert('Passwords do not match');
+                return;
+            }
+            
+            if (pin.length !== 4) {
+                e.preventDefault();
+                alert('PIN must be exactly 4 digits');
+                return;
+            }
+            
+            if (pin !== confirmPin) {
+                e.preventDefault();
+                alert('PINs do not match');
+                return;
+            }
+            
+            if (pin === '1234' || pin === '0000' || /^(.)\\1{3}$/.test(pin)) {
+                e.preventDefault();
+                alert('Please choose a more secure PIN');
+                return;
+            }
+        });
+    </script>
+</body>
+</html>

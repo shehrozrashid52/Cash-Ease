@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}QR Payment - CashEase Banking{% endblock %}
+{% block page_title %}QR Payment{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fas fa-qrcode me-2 text-primary"></i>
+                    QR Code Payment
+                </h5>
+                <small class="text-muted">Scan or paste QR code data to make payment</small>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="qr_data" class="form-label fw-semibold">
+                            QR Code Data
+                        </label>
+                        <textarea class="form-control" 
+                                  id="qr_data" 
+                                  name="qr_data" 
+                                  rows="4" 
+                                  placeholder="Scan QR code or paste the QR data here"
+                                  required></textarea>
+                        <div class="form-text">
+                            <i class="fas fa-camera me-1"></i>
+                            Use your device camera to scan QR code or paste the data manually
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="pin" class="form-label fw-semibold">
+                            Transaction PIN
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock text-muted"></i>
+                            </span>
+                            <input type="password" 
+                                   class="form-control form-control-lg" 
+                                   id="pin" 
+                                   name="pin" 
+                                   maxlength="4" 
+                                   placeholder="Enter your 4-digit PIN"
+                                   required>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-primary btn-lg flex-fill">
+                            <i class="fas fa-qrcode me-2"></i>
+                            Process Payment
+                        </button>
+                        <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-secondary btn-lg">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3">How to use QR Payment:</h6>
+                <ol class="mb-0">
+                    <li>Ask the merchant or person to show their QR code</li>
+                    <li>Use your phone camera to scan the QR code</li>
+                    <li>Copy and paste the QR data in the field above</li>
+                    <li>Enter your PIN and confirm the payment</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// PIN input formatting
+document.getElementById('pin').addEventListener('input', function(e) {
+    this.value = this.value.replace(/[^0-9]/g, '');
+});
+</script>
+{% endblock %}

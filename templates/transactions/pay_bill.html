@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block title %}Pay Bills - CashEase Banking{% endblock %}
+{% block page_title %}Pay Bills{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fas fa-file-invoice-dollar me-2 text-warning"></i>
+                    Pay Bills
+                </h5>
+                <small class="text-muted">Pay your utility and service bills</small>
+            </div>
+            <div class="card-body">
+                <form method="post" id="payBillForm">
+                    {% csrf_token %}
+                    
+                    <!-- Bill Type Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Select Bill Type</label>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="bill-type-card" onclick="selectBillType('electricity', this)">
+                                    <div class="text-center p-3 border rounded">
+                                        <i class="fas fa-bolt fa-2x text-warning mb-2"></i>
+                                        <h6>Electricity</h6>
+                                        <small class="text-muted">Power bills</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="bill-type-card" onclick="selectBillType('gas', this)">
+                                    <div class="text-center p-3 border rounded">
+                                        <i class="fas fa-fire fa-2x text-danger mb-2"></i>
+                                        <h6>Gas</h6>
+                                        <small class="text-muted">Gas bills</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="bill-type-card" onclick="selectBillType('water', this)">
+                                    <div class="text-center p-3 border rounded">
+                                        <i class="fas fa-tint fa-2x text-info mb-2"></i>
+                                        <h6>Water</h6>
+                                        <small class="text-muted">Water bills</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="bill-type-card" onclick="selectBillType('internet', this)">
+                                    <div class="text-center p-3 border rounded">
+                                        <i class="fas fa-wifi fa-2x text-primary mb-2"></i>
+                                        <h6>Internet</h6>
+                                        <small class="text-muted">Internet bills</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="bill-type-card" onclick="selectBillType('mobile', this)">
+                                    <div class="text-center p-3 border rounded">
+                                        <i class="fas fa-mobile-alt fa-2x text-success mb-2"></i>
+                                        <h6>Mobile</h6>
+                                        <small class="text-muted">Phone bills</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="bill_type" name="bill_type" required>
+                    </div>
+                    
+                    <!-- Bill Details -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <label for="bill_number" class="form-label fw-semibold">
+                                    Bill Number / Account Number
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-hashtag text-muted"></i>
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control form-control-lg" 
+                                           id="bill_number" 
+                                           name="bill_number" 
+                                           placeholder="Enter bill number"
+                                           required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <label for="amount" class="form-label fw-semibold">
+                                    Amount
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        PKR
+                                    </span>
+                                    <input type="number" 
+                                           class="form-control form-control-lg" 
+                                           id="amount" 
+                                           name="amount" 
+                                           step="0.01" 
+                                           min="0.01"
+                                           max="{{ user.profile.balance }}"
+                                           placeholder="0.00"
+                                           required>
+                                </div>
+                                <div class="form-text">
+                                    Available balance: <span class="fw-semibold text-success">PKR {{ user.profile.balance }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Bill Summary -->
+                    <div class="card bg-light mb-4" id="billSummary" style="display: none;">
+                        <div class="card-body">
+                            <h6 class="card-title">Bill Payment Summary</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted">Bill Type:</small>
+                                    <div id="summaryBillType" class="fw-bold">-</div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Bill Number:</small>
+                                    <div id="summaryBillNumber" class="fw-bold">-</div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-bold">Amount to Pay:</span>
+                                <span id="summaryAmount" class="fw-bold text-warning">PKR 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- PIN Verification -->
+                    <div class="mb-4">
+                        <label for="pin" class="form-label fw-semibold">
+                            Transaction PIN
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock text-muted"></i>
+                            </span>
+                            <input type="password" 
+                                   class="form-control form-control-lg" 
+                                   id="pin" 
+                                   name="pin" 
+                                   maxlength="4" 
+                                   placeholder="Enter your 4-digit PIN"
+                                   required>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-warning btn-lg flex-fill">
+                            <i class="fas fa-file-invoice-dollar me-2"></i>
+                            Pay Bill
+                        </button>
+                        <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-secondary btn-lg">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Recent Bills -->
+        <div class="card mt-4">
+            <div class="card-header bg-white">
+                <h6 class="mb-0 fw-bold">Recent Bill Payments</h6>
+            </div>
+            <div class="card-body">
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-file-invoice fa-2x mb-2"></i>
+                    <p>No recent bill payments</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function selectBillType(type, element) {
+    // Remove active class from all bill type cards
+    document.querySelectorAll('.bill-type-card .border').forEach(card => {
+        card.classList.remove('border-primary', 'bg-primary-subtle');
+        card.classList.add('border');
+    });
+    
+    // Add active class to selected card
+    const card = element.querySelector('.border');
+    card.classList.remove('border');
+    card.classList.add('border-primary', 'bg-primary-subtle');
+    
+    // Set bill type value
+    document.getElementById('bill_type').value = type;
+    
+    // Update summary
+    updateSummary();
+}
+
+function updateSummary() {
+    const billType = document.getElementById('bill_type').value;
+    const billNumber = document.getElementById('bill_number').value;
+    const amount = document.getElementById('amount').value;
+    
+    if (billType && billNumber && amount) {
+        document.getElementById('summaryBillType').textContent = billType.charAt(0).toUpperCase() + billType.slice(1);
+        document.getElementById('summaryBillNumber').textContent = billNumber;
+        document.getElementById('summaryAmount').textContent = 'PKR ' + parseFloat(amount).toFixed(2);
+        document.getElementById('billSummary').style.display = 'block';
+    } else {
+        document.getElementById('billSummary').style.display = 'none';
+    }
+}
+
+// Update summary when inputs change
+document.getElementById('bill_number').addEventListener('input', updateSummary);
+document.getElementById('amount').addEventListener('input', updateSummary);
+
+// PIN input formatting
+document.getElementById('pin').addEventListener('input', function(e) {
+    this.value = this.value.replace(/[^0-9]/g, '');
+});
+
+// Form validation
+document.getElementById('payBillForm').addEventListener('submit', function(e) {
+    const billType = document.getElementById('bill_type').value;
+    const amount = parseFloat(document.getElementById('amount').value);
+    const balance = {{ user.profile.balance }};
+    
+    if (!billType) {
+        e.preventDefault();
+        alert('Please select a bill type');
+        return;
+    }
+    
+    if (!amount || amount <= 0) {
+        e.preventDefault();
+        alert('Please enter a valid amount');
+        return;
+    }
+    
+    if (amount > balance) {
+        e.preventDefault();
+        alert('Insufficient balance');
+        return;
+    }
+});
+</script>
+
+<style>
+.bill-type-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.bill-type-card:hover .border {
+    border-color: var(--primary) !important;
+    transform: translateY(-2px);
+}
+
+.bill-type-card .border {
+    transition: all 0.3s ease;
+}
+</style>
+{% endblock %}

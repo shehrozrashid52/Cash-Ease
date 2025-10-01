@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Top Up - CashEase Banking{% endblock %}
+{% block page_title %}Top Up Account{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fas fa-plus-circle me-2 text-success"></i>
+                    Top Up Account
+                </h5>
+                <small class="text-muted">Add money to your CashEase account</small>
+            </div>
+            <div class="card-body">
+                <form method="post" id="topUpForm">
+                    {% csrf_token %}
+                    
+                    <!-- Quick Amount Selection -->
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Select Amount</label>
+                        <div class="row g-3">
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-primary w-100 amount-btn" onclick="selectAmount(this, 1000)">
+                                    PKR 1,000
+                                </button>
+                            </div>
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-primary w-100 amount-btn" onclick="selectAmount(this, 2500)">
+                                    PKR 2,500
+                                </button>
+                            </div>
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-primary w-100 amount-btn" onclick="selectAmount(this, 5000)">
+                                    PKR 5,000
+                                </button>
+                            </div>
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-primary w-100 amount-btn" onclick="selectAmount(this, 10000)">
+                                    PKR 10,000
+                                </button>
+                            </div>
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-primary w-100 amount-btn" onclick="selectAmount(this, 25000)">
+                                    PKR 25,000
+                                </button>
+                            </div>
+                            <div class="col-4">
+                                <button type="button" class="btn btn-outline-primary w-100 amount-btn" onclick="selectAmount(this, 50000)">
+                                    PKR 50,000
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Custom Amount -->
+                    <div class="mb-4">
+                        <label for="amount" class="form-label fw-semibold">Or Enter Custom Amount</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                PKR
+                            </span>
+                            <input type="number" 
+                                   class="form-control form-control-lg" 
+                                   id="amount" 
+                                   name="amount" 
+                                   step="0.01" 
+                                   min="100"
+                                   max="100000"
+                                   placeholder="Enter amount"
+                                   required>
+                        </div>
+                        <div class="form-text">Minimum: PKR 100, Maximum: PKR 100,000</div>
+                    </div>
+                    
+                    <!-- PIN Verification -->
+                    <div class="mb-4">
+                        <label for="pin" class="form-label fw-semibold">Transaction PIN</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-lock text-muted"></i>
+                            </span>
+                            <input type="password" 
+                                   class="form-control form-control-lg" 
+                                   id="pin" 
+                                   name="pin" 
+                                   maxlength="4" 
+                                   placeholder="Enter your 4-digit PIN"
+                                   required>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-success btn-lg flex-fill">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            Top Up Account
+                        </button>
+                        <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-secondary btn-lg">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function selectAmount(button, amount) {
+    // Remove active class from all buttons
+    document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active', 'btn-primary'));
+    document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.add('btn-outline-primary'));
+    
+    // Add active class to clicked button
+    button.classList.remove('btn-outline-primary');
+    button.classList.add('btn-primary', 'active');
+    
+    // Set amount in input
+    document.getElementById('amount').value = amount;
+}
+
+// PIN input formatting
+document.getElementById('pin').addEventListener('input', function(e) {
+    this.value = this.value.replace(/[^0-9]/g, '');
+});
+
+// Form submission
+document.getElementById('topUpForm').addEventListener('submit', function(e) {
+    const amount = parseFloat(document.getElementById('amount').value);
+    if (!amount || amount < 100) {
+        e.preventDefault();
+        alert('Please enter a valid amount (minimum PKR 100)');
+        return;
+    }
+    
+    if (amount > 100000) {
+        e.preventDefault();
+        alert('Maximum top-up amount is PKR 100,000');
+        return;
+    }
+});
+</script>
+{% endblock %}

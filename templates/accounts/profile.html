@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - CashEase Banking{% endblock %}
+{% block page_title %}Profile Settings{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-xl-4">
+        <!-- Profile Card -->
+        <div class="card">
+            <div class="card-body text-center">
+                <div class="mb-4">
+                    {% if user.profile.profile_picture %}
+                        <img src="{{ user.profile.profile_picture.url }}" 
+                             alt="Profile Picture" 
+                             class="rounded-circle mb-3"
+                             style="width: 120px; height: 120px; object-fit: cover;">
+                    {% else %}
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mx-auto mb-3"
+                             style="width: 120px; height: 120px; background: var(--primary); color: white;">
+                            <i class="fas fa-user fa-3x"></i>
+                        </div>
+                    {% endif %}
+                    <h5 class="mb-1 fw-bold">{{ user.profile.full_name }}</h5>
+                    <p class="text-muted mb-3">{{ user.email }}</p>
+                    
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        {% if user.is_verified %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i>Verified
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning">
+                                <i class="fas fa-clock me-1"></i>Pending
+                            </span>
+                        {% endif %}
+                        
+                        <span class="badge bg-primary">
+                            <i class="fas fa-star me-1"></i>Premium
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="fw-bold text-primary fs-5">{{ total_transactions|default:0 }}</div>
+                        <small class="text-muted">Transactions</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold text-success fs-5">${{ user.profile.balance }}</div>
+                        <small class="text-muted">Balance</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold text-info fs-5">{{ user.date_joined|timesince }}</div>
+                        <small class="text-muted">Member</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Account Details -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h6 class="mb-0 fw-bold">Account Details</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">Account Number</small>
+                    <div class="fw-bold d-flex justify-content-between align-items-center">
+                        <span>{{ user.profile.account_number }}</span>
+                        <button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard('{{ user.profile.account_number }}')">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Phone Number</small>
+                    <div class="fw-bold">{{ user.phone_number }}</div>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">CNIC</small>
+                    <div class="fw-bold">{{ user.profile.cnic }}</div>
+                </div>
+                <div class="mb-0">
+                    <small class="text-muted">Date of Birth</small>
+                    <div class="fw-bold">{{ user.profile.date_of_birth|date:"F d, Y" }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-8">
+        <!-- Edit Profile Form -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h6 class="mb-0 fw-bold">Edit Profile Information</h6>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <label for="first_name" class="form-label fw-semibold">First Name</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="first_name" 
+                                       name="first_name" 
+                                       value="{{ user.first_name }}"
+                                       required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <label for="last_name" class="form-label fw-semibold">Last Name</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="last_name" 
+                                       name="last_name" 
+                                       value="{{ user.last_name }}"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <label for="email" class="form-label fw-semibold">Email Address</label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       name="email" 
+                                       value="{{ user.email }}"
+                                       required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <label for="phone_number" class="form-label fw-semibold">Phone Number</label>
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="phone_number" 
+                                       name="phone_number" 
+                                       value="{{ user.phone_number }}"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="full_name" class="form-label fw-semibold">Full Name</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="full_name" 
+                               name="full_name" 
+                               value="{{ user.profile.full_name }}"
+                               required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <label for="cnic" class="form-label fw-semibold">CNIC</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="cnic" 
+                                       name="cnic" 
+                                       value="{{ user.profile.cnic }}"
+                                       placeholder="00000-0000000-0"
+                                       required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-4">
+                                <label for="date_of_birth" class="form-label fw-semibold">Date of Birth</label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="date_of_birth" 
+                                       name="date_of_birth" 
+                                       value="{{ user.profile.date_of_birth|date:'Y-m-d' }}"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="address" class="form-label fw-semibold">Address</label>
+                        <textarea class="form-control" 
+                                  id="address" 
+                                  name="address" 
+                                  rows="3" 
+                                  required>{{ user.profile.address }}</textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="profile_picture" class="form-label fw-semibold">Profile Picture</label>
+                        <input type="file" 
+                               class="form-control" 
+                               id="profile_picture" 
+                               name="profile_picture" 
+                               accept="image/*"
+                               capture="user">
+                        <div class="form-text">
+                            <i class="fas fa-camera me-1"></i>Take a photo or upload from gallery
+                        </div>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="openCamera()">
+                                <i class="fas fa-camera me-1"></i>Open Camera
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Save Changes
+                        </button>
+                        <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Security Settings -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h6 class="mb-0 fw-bold">Security Settings</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between align-items-center p-3 border rounded mb-3">
+                            <div>
+                                <h6 class="mb-1">Change PIN</h6>
+                                <small class="text-muted">Update your transaction PIN</small>
+                            </div>
+                            <a href="{% url 'accounts:change_pin' %}" class="btn btn-outline-primary btn-sm">
+                                Change
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex justify-content-between align-items-center p-3 border rounded mb-3">
+                            <div>
+                                <h6 class="mb-1">Two-Factor Auth</h6>
+                                <small class="text-muted">Enable 2FA for extra security</small>
+                            </div>
+                            <button class="btn btn-outline-success btn-sm">
+                                Enable
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        const btn = event.target.closest('button');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check text-success"></i>';
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+        }, 2000);
+    });
+}
+
+// CNIC formatting
+document.getElementById('cnic').addEventListener('input', function(e) {
+    let value = e.target.value.replace(/[^\d]/g, '');
+    if (value.length >= 5) value = value.substring(0, 5) + '-' + value.substring(5);
+    if (value.length >= 13) value = value.substring(0, 13) + '-' + value.substring(13);
+    e.target.value = value.substring(0, 15);
+});
+
+// Camera functionality
+function openCamera() {
+    const input = document.getElementById('profile_picture');
+    input.setAttribute('capture', 'user');
+    input.click();
+}
+
+// Preview selected image
+document.getElementById('profile_picture').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Update profile picture preview if exists
+            const profileImg = document.querySelector('.rounded-circle');
+            if (profileImg) {
+                profileImg.src = e.target.result;
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

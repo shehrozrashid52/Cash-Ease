@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Transaction History - CashEase Banking{% endblock %}
+{% block page_title %}Transaction History{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fas fa-history me-2 text-info"></i>
+                    All Transactions
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if transactions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="border-0">Date</th>
+                                    <th class="border-0">Type</th>
+                                    <th class="border-0">Description</th>
+                                    <th class="border-0">Amount</th>
+                                    <th class="border-0">Status</th>
+                                    <th class="border-0">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for transaction in transactions %}
+                                <tr style="cursor: pointer;" onclick="window.location.href='{% url 'transactions:transaction_detail' transaction.transaction_id %}'">
+                                    <td class="fw-medium">{{ transaction.created_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        {% if transaction.transaction_type == 'send' %}
+                                            <span class="badge bg-danger-subtle text-danger">
+                                                <i class="fas fa-arrow-up me-1"></i>Send
+                                            </span>
+                                        {% elif transaction.transaction_type == 'receive' %}
+                                            <span class="badge bg-success-subtle text-success">
+                                                <i class="fas fa-arrow-down me-1"></i>Receive
+                                            </span>
+                                        {% elif transaction.transaction_type == 'bill_payment' %}
+                                            <span class="badge bg-warning-subtle text-warning">
+                                                <i class="fas fa-file-invoice me-1"></i>Bill
+                                            </span>
+                                        {% elif transaction.transaction_type == 'deposit' %}
+                                            <span class="badge bg-info-subtle text-info">
+                                                <i class="fas fa-plus me-1"></i>Top-up
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-primary-subtle text-primary">
+                                                <i class="fas fa-exchange-alt me-1"></i>Other
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ transaction.description|truncatechars:50 }}</td>
+                                    <td>
+                                        {% if transaction.sender == user %}
+                                            <span class="text-danger fw-bold">-PKR {{ transaction.amount }}</span>
+                                        {% else %}
+                                            <span class="text-success fw-bold">+PKR {{ transaction.amount }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if transaction.status == 'completed' %}
+                                            <span class="badge bg-success">Completed</span>
+                                        {% elif transaction.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Failed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted">PKR {{ user.profile.balance }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">No transactions found</h6>
+                        <p class="text-muted">Start by sending money or making a payment</p>
+                        <a href="{% url 'transactions:send_money' %}" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Send Money
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
